@@ -91,8 +91,41 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public List<Seller> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.prepareStatement(
+					"SELECT seller.*, department.Name as DepName "
+					+ "FROM seller INNER JOIN department "
+					+ "ON seller.DepartmentId = department.Id "
+					+ "ORDER BY name");
+			
+			rs = st.executeQuery(); //Obtem o resultado da operacao acima
+			
+			List<Seller> list = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>();
+			
+			while (rs.next()) {
+				//instanciar os vendedores sem repeticao de departamento (usando map):
+				Department dep = map.get(rs.getInt("DepartmentId")); //se o departamento ja existir, o map.get vai pegar ele e vou reaproveitar o departamento
+				
+				if (dep == null) { //se o departamento existir, o map.get vai retornar null
+					dep = instantiateDepartment(rs); // vai instanciar um novo departamento
+					map.put(rs.getInt("DepartmentId"), dep); //salva o departamento no map
+				}
+				
+				Seller obj = instantiateSeller(rs, dep); //instanciar um novo vendedor
+				list.add(obj);
+			}
+			return list;
+		}
+		catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+		}
 	}
 
 	@Override
@@ -115,14 +148,14 @@ public class SellerDaoJDBC implements SellerDao {
 			
 			while (rs.next()) {
 				
-				Department dep = map.get(rs.getInt("DepartmentId")); //se o departamento ja existir, o map.get vai pegar ele e vou reaproveitar o departamento
+				Department dep = map.get(rs.getInt("DepartmentId")); 
 				
-				if (dep == null) { //se o departamento existir, o map.get vai retornar null
-					dep = instantiateDepartment(rs); // vai instanciar um novo departamento
-					map.put(rs.getInt("DepartmentId"), dep); //salva o departamento no map
+				if (dep == null) { 
+					dep = instantiateDepartment(rs); 
+					map.put(rs.getInt("DepartmentId"), dep); 
 				}
 				
-				Seller obj = instantiateSeller(rs, dep); //instanciar um novo vendedor
+				Seller obj = instantiateSeller(rs, dep); 
 				list.add(obj);
 			}
 			return list;
