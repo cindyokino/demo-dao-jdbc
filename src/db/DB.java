@@ -16,7 +16,7 @@ public class DB {
 	public static Connection getConnection() { //implementacao da operacao para ABRIR uma conexao
 		if (conn == null) {
 			try {
-				Properties props = loadProperties(); //pegamos as propriedades
+				Properties props = loadProperties(); //pegamos as propriedades (do arquivo db.properties)
 				String url = props.getProperty("dburl"); //no caso a url
 				conn = DriverManager.getConnection(url, props); //e conectamos ao banco de dados
 				//conectar com o banco de dados no JDBC é instanciar um objeto do tipo Connection
